@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { KanbanBoard } from '@/components/board/KanbanBoard';
 import { MethodologyPicker } from '@/components/methodology/MethodologyPicker';
 import { ImportExportModal } from '@/components/import-export/ImportExportModal';
+import { WelcomeToast } from '@/components/onboarding/WelcomeToast';
 import { useProjectStore } from '@/store/projectStore';
 import { MethodologyType } from '@/types/project';
 import { toast } from 'sonner';
@@ -15,8 +16,23 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [isMethodologyPickerOpen, setIsMethodologyPickerOpen] = useState(false);
   const [importExportMode, setImportExportMode] = useState<'import' | 'export' | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   
-  const { createProject, setCurrentProject } = useProjectStore();
+  const { projects, createProject, setCurrentProject } = useProjectStore();
+
+  // Show welcome toast for first-time users
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('projectflow-welcome-seen');
+    if (!hasSeenWelcome && projects.length === 0) {
+      const timer = setTimeout(() => setShowWelcome(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [projects.length]);
+
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    localStorage.setItem('projectflow-welcome-seen', 'true');
+  };
 
   const handleCreateProject = (methodology: MethodologyType, name: string) => {
     const project = createProject(name, methodology);
@@ -27,7 +43,7 @@ const Index = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onCreateProject={() => setIsMethodologyPickerOpen(true)} />;
       case 'board':
         return <KanbanBoard />;
       case 'calendar':
@@ -100,6 +116,11 @@ const Index = () => {
         onClose={() => setImportExportMode(null)}
         mode={importExportMode || 'export'}
       />
+
+      {/* Welcome Toast */}
+      <AnimatePresence>
+        {showWelcome && <WelcomeToast onDismiss={dismissWelcome} />}
+      </AnimatePresence>
     </div>
   );
 };
