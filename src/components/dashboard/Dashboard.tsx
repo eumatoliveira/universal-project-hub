@@ -7,11 +7,13 @@ import {
   TrendingUp,
   Calendar,
   Users,
-  Zap
+  Zap,
+  Rocket
 } from 'lucide-react';
 import { useProjectStore } from '@/store/projectStore';
 import { getMethodologyConfig } from '@/config/methodologies';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/onboarding/EmptyState';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -28,7 +30,11 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-export function Dashboard() {
+interface DashboardProps {
+  onCreateProject?: () => void;
+}
+
+export function Dashboard({ onCreateProject }: DashboardProps) {
   const { projects, currentProject, currentBoard } = useProjectStore();
 
   const stats = currentBoard ? {
@@ -168,50 +174,90 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => {
               const config = getMethodologyConfig(project.methodology);
+              const totalCards = project.boards.reduce((acc: number, b) => 
+                acc + b.columns.reduce((a: number, c) => a + c.cards.length, 0), 0
+              );
+              
               return (
                 <motion.div
                   key={project.id}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "glass-card p-5 cursor-pointer transition-all",
+                    "glass-card p-5 cursor-pointer transition-all group relative overflow-hidden",
                     currentProject?.id === project.id && "ring-2 ring-primary"
                   )}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{config?.icon}</span>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{project.name}</h3>
-                        <p className="text-sm text-muted-foreground">{config?.name}</p>
+                  {/* Hover gradient effect */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ 
+                      background: `linear-gradient(135deg, hsl(var(--${config?.color}) / 0.05) 0%, transparent 50%)` 
+                    }}
+                  />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <motion.span 
+                          className="text-2xl"
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                        >
+                          {config?.icon}
+                        </motion.span>
+                        <div>
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {project.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">{config?.name}</p>
+                        </div>
                       </div>
+                      <div
+                        className="w-3 h-3 rounded-full ring-2 ring-background shadow-lg"
+                        style={{ backgroundColor: `hsl(var(--${config?.color}))` }}
+                      />
                     </div>
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: `hsl(var(--${config?.color}))` }}
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{project.boards.length} boards</span>
-                    <span>
-                      {project.boards.reduce((acc: number, b) => 
-                        acc + b.columns.reduce((a: number, c) => a + c.cards.length, 0), 0
-                      )} cards
-                    </span>
+                    
+                    {/* Progress bar */}
+                    <div className="mt-4 h-1.5 bg-muted/50 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: totalCards > 0 ? '35%' : '0%' }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: `hsl(var(--${config?.color}))` }}
+                      />
+                    </div>
+                    
+                    <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1">
+                          <FolderKanban className="h-3.5 w-3.5" />
+                          {project.boards.length}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          {totalCards}
+                        </span>
+                      </div>
+                      <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity text-primary font-medium">
+                        Abrir →
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               );
             })}
           </div>
         ) : (
-          <div className="glass-card p-12 text-center">
-            <Zap className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nenhum projeto ainda
-            </h3>
-            <p className="text-muted-foreground">
-              Crie seu primeiro projeto clicando no botão + na barra lateral
-            </p>
-          </div>
+          <EmptyState
+            icon={Rocket}
+            title="Bem-vindo ao ProjectFlow!"
+            description="Gerencie seus projetos com metodologias ágeis, lean e tradicionais. Escolha entre Scrum, Kanban, DMAIC, Waterfall e muito mais."
+            actionLabel="Criar Primeiro Projeto"
+            onAction={onCreateProject}
+            variant="hero"
+          />
         )}
       </motion.div>
     </motion.div>

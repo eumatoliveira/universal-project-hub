@@ -53,24 +53,29 @@ export function BoardCard({ card, index, onEdit, onDelete }: BoardCardProps) {
     <motion.div
       ref={setNodeRef}
       style={style}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.05 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -2 }}
+      transition={{ delay: index * 0.03, duration: 0.2 }}
       className={cn(
         "group glass-card p-4 cursor-pointer transition-all duration-200",
+        "hover:shadow-lg hover:shadow-primary/5",
         priority.class,
-        isDragging && "opacity-50 shadow-lg scale-105 rotate-2"
+        isDragging && "opacity-50 shadow-xl scale-105 rotate-2 z-50"
       )}
     >
       <div className="flex items-start gap-3">
         {/* Drag Handle */}
-        <button
+        <motion.button
           {...attributes}
           {...listeners}
-          className="mt-0.5 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-muted/50 cursor-grab active:cursor-grabbing transition-opacity"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-0.5 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-muted/50 cursor-grab active:cursor-grabbing transition-all"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </button>
+        </motion.button>
 
         {/* Card Content */}
         <div className="flex-1 min-w-0">
@@ -110,12 +115,15 @@ export function BoardCard({ card, index, onEdit, onDelete }: BoardCardProps) {
           {card.tags && card.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {card.tags.map((tag, i) => (
-                <span
+                <motion.span
                   key={i}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
                   className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary"
                 >
                   {tag}
-                </span>
+                </motion.span>
               ))}
             </div>
           )}

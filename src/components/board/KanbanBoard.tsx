@@ -17,8 +17,9 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, FolderKanban } from 'lucide-react';
 import { useProjectStore } from '@/store/projectStore';
+import { EmptyState } from '@/components/onboarding/EmptyState';
 import { BoardColumn } from './BoardColumn';
 import { BoardCard } from './BoardCard';
 import { CardModal } from './CardModal';
@@ -46,11 +47,14 @@ export function KanbanBoard() {
 
   if (!currentBoard) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Nenhum projeto selecionado</h2>
-          <p className="text-muted-foreground">Crie ou selecione um projeto para começar</p>
-        </div>
+      <div className="flex items-center justify-center h-full p-8">
+        <EmptyState
+          icon={FolderKanban}
+          title="Nenhum projeto selecionado"
+          description="Selecione um projeto na barra lateral ou crie um novo para começar a organizar suas tarefas."
+          actionLabel="Ver Dashboard"
+          onAction={() => {}}
+        />
       </div>
     );
   }

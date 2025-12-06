@@ -143,46 +143,64 @@ export function Sidebar({ onNavigate, currentPage, onNewProject, onExport, onImp
               </div>
               
               <div className="space-y-1">
-                {projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className={cn(
-                      "group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all",
-                      currentProject?.id === project.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
-                    onClick={() => setCurrentProject(project.id)}
+                {projects.length > 0 ? (
+                  projects.map((project, index) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={cn(
+                        "group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all",
+                        currentProject?.id === project.id
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
+                      onClick={() => setCurrentProject(project.id)}
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <motion.div 
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: `hsl(var(--methodology-${project.methodology}))` }}
+                          whileHover={{ scale: 1.5 }}
+                        />
+                        <span className="text-sm truncate">{project.name}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteProject(project.id);
+                        }}
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-3 py-4 text-center"
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0",
-                        `bg-${project.methodology === 'scrum' ? 'methodology-scrum' : 
-                              project.methodology === 'kanban' ? 'methodology-kanban' :
-                              project.methodology === 'dmaic' ? 'methodology-dmaic' : 'methodology-waterfall'}`
-                      )} 
-                      style={{ backgroundColor: `hsl(var(--methodology-${project.methodology}))` }}
-                      />
-                      <span className="text-sm truncate">{project.name}</span>
+                    <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-muted/50 flex items-center justify-center">
+                      <FolderKanban className="h-5 w-5 text-muted-foreground" />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Nenhum projeto
+                    </p>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteProject(project.id);
-                      }}
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                      size="sm"
+                      onClick={onNewProject}
+                      className="mt-2 text-xs text-primary hover:text-primary"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Plus className="h-3 w-3 mr-1" />
+                      Criar projeto
                     </Button>
-                  </div>
-                ))}
-                
-                {projects.length === 0 && (
-                  <p className="text-xs text-muted-foreground px-3 py-2">
-                    Nenhum projeto ainda
-                  </p>
+                  </motion.div>
                 )}
               </div>
             </motion.div>
